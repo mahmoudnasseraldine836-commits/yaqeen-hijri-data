@@ -1,7 +1,5 @@
 {
   "schema_version": 1,
-  "region": "LB",
-  "timezone": "Asia/Beirut",
   "maraji": {
     "khamenei": {
       "status": "published_local_calendar",
@@ -12,11 +10,19 @@
       "source": "https://almaaref.org.lb/",
       "corroboration": "https://t.me/s/almaareflb?before=40584",
       "basis": "Beirut published civil-date calendar; date pair 2026-11-12 = 2 Jumada II 1448",
-      "observed_on": "2026-11-12"
+      "observed_on": "2026-11-12",
+      "timezone": "Asia/Beirut"
     },
     "sistani": {
-      "status": "unverified",
-      "source": "https://www.sistani.org/arabic/"
+      "status": "official_calendar",
+      "region": "IQ",
+      "timezone": "Asia/Baghdad",
+      "hijri_year": 1448,
+      "hijri_month": 6,
+      "month_start": "2026-11-12",
+      "source": "https://www.sistani.org/",
+      "basis": "official published Najaf civil-date calendar",
+      "observed_on": "2026-11-13"
     },
     "fadlallah": {
       "status": "official_calendar",
@@ -25,7 +31,8 @@
       "month_start": "2026-11-10",
       "source": "https://www.bayynat.org.lb/article/أخبار-بينات/57325/الثّلاثاء-أوّل-شهر-جمادى-الثّانية-1448هـ/ar",
       "region": "LB",
-      "basis": "official published calendar, civil date"
+      "basis": "official published calendar, civil date",
+      "timezone": "Asia/Beirut"
     }
   }
 }
