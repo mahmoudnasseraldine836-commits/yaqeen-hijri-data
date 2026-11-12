@@ -4,8 +4,15 @@
   "timezone": "Asia/Beirut",
   "maraji": {
     "khamenei": {
-      "status": "unverified",
-      "source": "https://www.leader.ir/ar"
+      "status": "published_local_calendar",
+      "region": "LB",
+      "hijri_year": 1448,
+      "hijri_month": 6,
+      "month_start": "2026-11-11",
+      "source": "https://almaaref.org.lb/",
+      "corroboration": "https://t.me/s/almaareflb?before=40584",
+      "basis": "Beirut published civil-date calendar; date pair 2026-11-12 = 2 Jumada II 1448",
+      "observed_on": "2026-11-12"
     },
     "sistani": {
       "status": "unverified",
