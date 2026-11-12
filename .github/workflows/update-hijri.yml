@@ -1,0 +1,31 @@
+name: Refresh official Hijri calendar
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17,47 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: hijri-update
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test parser
+        run: python scripts/update_hijri.py --test
+      - name: Refresh official data
+        run: python scripts/update_hijri.py
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- data/hijri.json; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/hijri.json
+          git commit -m "Update official Hijri calendar"
+          git push
