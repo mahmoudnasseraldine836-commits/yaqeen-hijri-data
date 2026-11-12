@@ -66,10 +66,13 @@ def refresh_one(key, URL, hosts, status):
     old_index=old["hijri_year"]*12+old["hijri_month"]
     new_index=year*12+month
     if delta==0 and new_index==old_index:
+        if old.get("observed_on") != civil.isoformat():
+            old["observed_on"]=civil.isoformat()
+            PATH.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n")
         print(f"{key}: Official date agrees with stored month"); return
     if delta not in (29,30) or new_index!=old_index+1:
         raise ValueError("Unexpected month transition; retain verified data")
-    data["maraji"][key]={"status":status,"region":region,"timezone":timezone,"hijri_year":year,"hijri_month":month,"month_start":start.isoformat(),"source":URL,"basis":"official published civil-date calendar"}
+    data["maraji"][key]={"status":status,"region":region,"timezone":timezone,"hijri_year":year,"hijri_month":month,"month_start":start.isoformat(),"source":URL,"observed_on":civil.isoformat(),"basis":"official published civil-date calendar"}
     PATH.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n")
 
 def refresh():
