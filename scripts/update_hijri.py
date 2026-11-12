@@ -1,0 +1,71 @@
+"""Read Bayynat's published civil-date calendar; never guess missing dates."""
+import json, re, unicodedata
+from datetime import date, datetime, timedelta
+from pathlib import Path
+from urllib.request import Request, urlopen
+from urllib.parse import urlparse
+from html.parser import HTMLParser
+from zoneinfo import ZoneInfo
+
+URL = "https://www.bayynat.org.lb/prayer-time"
+PATH = Path("data/hijri.json")
+GREG = ["كانون الثاني","شباط","اذار","نيسان","ايار","حزيران","تموز","اب","ايلول","تشرين الاول","تشرين الثاني","كانون الاول"]
+HIJRI = {"محرم":1,"صفر":2,"ربيع الاول":3,"ربيع الثاني":4,"ربيع الاخر":4,"جمادى الاولى":5,"جمادى الثانية":6,"جمادى ثاني":6,"جمادى الاخرة":6,"جمادى اخرة":6,"رجب":7,"شعبان":8,"رمضان":9,"شوال":10,"ذو القعدة":11,"ذي القعدة":11,"ذو الحجة":12,"ذي الحجة":12}
+
+class Visible(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.parts=[]; self.skip=0
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script","style"): self.skip+=1
+    def handle_endtag(self, tag):
+        if tag in ("script","style") and self.skip: self.skip-=1
+    def handle_data(self, data):
+        if not self.skip: self.parts.append(data)
+
+def normalize(s):
+    s="".join(c for c in unicodedata.normalize("NFKD",s) if not unicodedata.combining(c))
+    s=s.translate(str.maketrans("أإآٱ٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹","اااا01234567890123456789"))
+    return " ".join(s.replace("ـ","").split())
+
+def parse(html):
+    p=Visible(); p.feed(html); t=normalize(" ".join(p.parts))
+    g="|".join(map(re.escape,GREG))
+    h="|".join(map(re.escape,sorted(HIJRI,key=len,reverse=True)))
+    pattern=rf"(\d{{1,2}}) ({g}) (20\d{{2}})\s*الموافق\s*(\d{{1,2}}) ({h}) (14\d{{2}})"
+    matches=set(re.findall(pattern,t))
+    if len(matches)!=1: raise ValueError("Missing or ambiguous official date pair")
+    gd,gm,gy,hd,hm,hy=matches.pop()
+    return date(int(gy),GREG.index(gm)+1,int(gd)), int(hd),HIJRI[hm],int(hy)
+
+def refresh():
+    req=Request(URL,headers={"User-Agent":"YaqeenCalendar/1.0"})
+    with urlopen(req,timeout=30) as res:
+        if urlparse(res.geturl()).hostname not in ("www.bayynat.org.lb","bayynat.org.lb"): raise ValueError("Unexpected source host")
+        html=res.read(4000000).decode("utf-8")
+    civil,day,month,year=parse(html)
+    today=datetime.now(ZoneInfo("Asia/Beirut")).date()
+    if civil != today or not 1<=day<=30: raise ValueError("Source date not current or invalid")
+    start=civil-timedelta(days=day-1)
+    data=json.loads(PATH.read_text())
+    old=data["maraji"]["fadlallah"]
+    prev=date.fromisoformat(old["month_start"])
+    delta=(start-prev).days
+    old_index=old["hijri_year"]*12+old["hijri_month"]
+    new_index=year*12+month
+    if delta==0 and new_index==old_index:
+        print("Official date agrees with stored month"); return
+    if delta not in (29,30) or new_index!=old_index+1:
+        raise ValueError("Unexpected month transition; retain verified data")
+    data["maraji"]["fadlallah"]={"status":"official_calendar","region":"LB","hijri_year":year,"hijri_month":month,"month_start":start.isoformat(),"source":URL,"basis":"official published civil-date calendar"}
+    PATH.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n")
+
+if __name__=="__main__":
+    import sys
+    if "--test" in sys.argv:
+        assert parse("<p>الخميس 12 تشرين الثاني 2026</p><p>الموافق</p><p>3 جمادى آخرة 1448</p>")== (date(2026,11,12),3,6,1448)
+        try: parse("<p>no date</p>")
+        except ValueError: pass
+        else: raise AssertionError("Missing date accepted")
+        print("Parser fixture passed")
+    else: refresh()
