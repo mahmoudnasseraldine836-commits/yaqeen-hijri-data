@@ -32,23 +32,24 @@ def parse(html):
     p=Visible(); p.feed(html); t=normalize(" ".join(p.parts))
     g="|".join(map(re.escape,GREG))
     h="|".join(map(re.escape,sorted(HIJRI,key=len,reverse=True)))
-    pattern=rf"(\d{{1,2}}) ({g}) (20\d{{2}})\s*الموافق\s*(\d{{1,2}}) ({h}) (14\d{{2}})"
+    pattern=rf"(\d{{1,2}}) ({g}) (20\d{{2}})\s*(?:م\s*)?الموافق\s*(?:ل\s*)?(\d{{1,2}}) ({h}) (14\d{{2}})"
     matches=set(re.findall(pattern,t))
     if len(matches)!=1: raise ValueError("Missing or ambiguous official date pair")
     gd,gm,gy,hd,hm,hy=matches.pop()
     return date(int(gy),GREG.index(gm)+1,int(gd)), int(hd),HIJRI[hm],int(hy)
 
-def refresh():
+def refresh_one(key, URL, hosts, status):
     req=Request(URL,headers={"User-Agent":"YaqeenCalendar/1.0"})
     with urlopen(req,timeout=30) as res:
-        if urlparse(res.geturl()).hostname not in ("www.bayynat.org.lb","bayynat.org.lb"): raise ValueError("Unexpected source host")
+        if urlparse(res.geturl()).hostname not in hosts: raise ValueError("Unexpected source host")
         html=res.read(4000000).decode("utf-8")
+    if key=="khamenei" and "مدينة بيروت" not in html: raise ValueError("Beirut calendar not found")
     civil,day,month,year=parse(html)
     today=datetime.now(ZoneInfo("Asia/Beirut")).date()
     if civil != today or not 1<=day<=30: raise ValueError("Source date not current or invalid")
     start=civil-timedelta(days=day-1)
     data=json.loads(PATH.read_text())
-    old=data["maraji"]["fadlallah"]
+    old=data["maraji"][key]
     prev=date.fromisoformat(old["month_start"])
     delta=(start-prev).days
     old_index=old["hijri_year"]*12+old["hijri_month"]
@@ -57,8 +58,19 @@ def refresh():
         print("Official date agrees with stored month"); return
     if delta not in (29,30) or new_index!=old_index+1:
         raise ValueError("Unexpected month transition; retain verified data")
-    data["maraji"]["fadlallah"]={"status":"official_calendar","region":"LB","hijri_year":year,"hijri_month":month,"month_start":start.isoformat(),"source":URL,"basis":"official published civil-date calendar"}
+    data["maraji"]["fadlallah"]={"status":status,"region":"LB","hijri_year":year,"hijri_month":month,"month_start":start.isoformat(),"source":URL,"basis":"official published civil-date calendar"}
     PATH.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n")
+
+def refresh():
+    errors=[]
+    for key,url,hosts,status in [
+        ("fadlallah",URL,("www.bayynat.org.lb","bayynat.org.lb"),"official_calendar"),
+        ("khamenei","https://almaaref.org.lb/",("almaaref.org.lb","www.almaaref.org.lb"),"published_local_calendar"),
+    ]:
+        try: refresh_one(key,url,hosts,status)
+        except Exception as exc:
+            print(f"{key}: {exc}",flush=True); errors.append(key)
+    if errors: print("::warning::Source checks failed: "+", ".join(errors))
 
 if __name__=="__main__":
     import sys
@@ -67,5 +79,6 @@ if __name__=="__main__":
         try: parse("<p>no date</p>")
         except ValueError: pass
         else: raise AssertionError("Missing date accepted")
+        assert parse("<p>مواقيت الصلاة ليوم الخميس (12 تشرين الثاني 2026 م الموافق لـ 02 جمادى الثانية 1448 هـ) - حسب توقيت مدينة بيروت</p>")== (date(2026,11,12),2,6,1448)
         print("Parser fixture passed")
     else: refresh()
