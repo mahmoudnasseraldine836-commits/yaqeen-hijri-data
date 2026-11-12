@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "region": "LB",
+  "timezone": "Asia/Beirut",
+  "maraji": {
+    "khamenei": {
+      "status": "unverified",
+      "source": "https://www.leader.ir/ar"
+    },
+    "sistani": {
+      "status": "unverified",
+      "source": "https://www.sistani.org/arabic/"
+    },
+    "fadlallah": {
+      "status": "unverified",
+      "source": "https://www.bayynat.org.lb/"
+    }
+  }
+}
