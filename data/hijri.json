@@ -12,8 +12,13 @@
       "source": "https://www.sistani.org/arabic/"
     },
     "fadlallah": {
-      "status": "unverified",
-      "source": "https://www.bayynat.org.lb/"
+      "status": "official_calendar",
+      "hijri_year": 1448,
+      "hijri_month": 6,
+      "month_start": "2026-11-10",
+      "source": "https://www.bayynat.org.lb/article/أخبار-بينات/57325/الثّلاثاء-أوّل-شهر-جمادى-الثّانية-1448هـ/ar",
+      "region": "LB",
+      "basis": "official published calendar, civil date"
     }
   }
 }
