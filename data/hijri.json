@@ -10,7 +10,7 @@
       "source": "https://almaaref.org.lb/",
       "corroboration": "https://t.me/s/almaareflb?before=40584",
       "basis": "Beirut published civil-date calendar; date pair 2026-11-12 = 2 Jumada II 1448",
-      "observed_on": "2026-11-12",
+      "observed_on": "2026-11-13",
       "timezone": "Asia/Beirut"
     },
     "sistani": {
@@ -32,7 +32,8 @@
       "source": "https://www.bayynat.org.lb/article/أخبار-بينات/57325/الثّلاثاء-أوّل-شهر-جمادى-الثّانية-1448هـ/ar",
       "region": "LB",
       "basis": "official published calendar, civil date",
-      "timezone": "Asia/Beirut"
+      "timezone": "Asia/Beirut",
+      "observed_on": "2026-11-13"
     }
   }
 }
