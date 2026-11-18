@@ -10,7 +10,7 @@
       "source": "https://almaaref.org.lb/",
       "corroboration": "https://t.me/s/almaareflb?before=40584",
       "basis": "Beirut published civil-date calendar; date pair 2026-11-12 = 2 Jumada II 1448",
-      "observed_on": "2026-11-17",
+      "observed_on": "2026-11-18",
       "timezone": "Asia/Beirut"
     },
     "sistani": {
@@ -22,7 +22,7 @@
       "month_start": "2026-11-12",
       "source": "https://www.sistani.org/",
       "basis": "official published Najaf civil-date calendar",
-      "observed_on": "2026-11-17"
+      "observed_on": "2026-11-18"
     },
     "fadlallah": {
       "status": "official_calendar",
